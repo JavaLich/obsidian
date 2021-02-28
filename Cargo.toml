@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 vulkano = "0.20.0"
+vulkano-shaders = "0.20.0"
+minifb = "0.19.2"
