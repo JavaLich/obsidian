@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 mod cs;
 
-pub fn init() {
+pub fn init() -> Vec<u32> {
     let instance =
         Instance::new(None, &InstanceExtensions::none(), None).expect("Failed to create instance");
 
@@ -43,9 +43,9 @@ pub fn init() {
 
     let queue = queues.next().unwrap();
 
-    let data_iter = 0..65536;
+    let data = [0u32; crate::WIDTH * crate::HEIGHT];
     let data_buffer =
-        CpuAccessibleBuffer::from_iter(device.clone(), BufferUsage::all(), false, data_iter)
+        CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, data)
             .expect("Failed to create buffer");
 
     let shader = cs::Shader::load(device.clone()).expect("Failed to create shader module");
@@ -67,7 +67,7 @@ pub fn init() {
 
     let mut builder = AutoCommandBufferBuilder::new(device.clone(), queue.family()).unwrap();
     builder
-        .dispatch([1024, 1, 1], compute_pipeline.clone(), set.clone(), ())
+        .dispatch([10000, 1, 1], compute_pipeline.clone(), set.clone(), ())
         .unwrap();
     let command_buffer = builder.build().unwrap();
 
@@ -80,4 +80,5 @@ pub fn init() {
         .unwrap();
 
     let content = data_buffer.read().unwrap();
+    content.to_vec()
 }
