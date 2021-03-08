@@ -95,6 +95,7 @@ pub fn compute(&self) -> Vec<u32>{
         .unwrap();
 
     let content = self.data_buffer.read().unwrap();
+
     content.to_vec()
 }
 

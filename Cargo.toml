@@ -1,5 +1,5 @@
 [package]
-name = "raytrace_rs"
+name = "obsidian"
 version = "0.1.0"
 authors = ["Akash <amelachuri@gmail.com>"]
 edition = "2018"
