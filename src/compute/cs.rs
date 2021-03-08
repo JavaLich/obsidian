@@ -12,5 +12,6 @@ layout(set = 0, binding = 0) buffer Data {
 void main() {
     uint idx = gl_GlobalInvocationID.x;
     buf.data[idx] = 0x00ff00;
-}"
+}
+"
 }
