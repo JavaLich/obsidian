@@ -8,6 +8,5 @@ const HEIGHT: usize = 600;
 
 fn main() {
     let tracer = Tracer::init();
-    let pixels = tracer.compute();
-    graphics::init(&pixels);
+    graphics::run(&tracer);
 }
