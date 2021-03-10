@@ -13,10 +13,23 @@ use std::sync::Arc;
 
 mod cs;
 
+struct SceneData {
+    _width: u32,
+    _height: u32,
+}
+
+struct Camera {
+    _vp_height: f32,
+    _focal_length: f32,
+    _position: [f32; 3]
+}
+
 pub struct Tracer {
     device: Arc<Device>,
     queue: Arc<Queue>,
     data_buffer: Arc<CpuAccessibleBuffer<[u32; crate::WIDTH * crate::HEIGHT]>>,
+    scene_buffer: Arc<CpuAccessibleBuffer<SceneData>>,
+    cam_buffer: Arc<CpuAccessibleBuffer<Camera>>,
     shader: cs::Shader,
 }
 
@@ -56,12 +69,30 @@ impl Tracer {
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, data)
                 .expect("Failed to create buffer");
 
+        let scene_data = SceneData {
+            _width: crate::WIDTH as u32,
+            _height: crate::HEIGHT as u32,
+        };
+        let scene_buffer =
+            CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, scene_data)
+                .expect("Failed to create buffer");
+        let cam = Camera {
+            _position: [0.0; 3],
+            _vp_height: 2.0,
+            _focal_length: 1.0,
+        };
+        let cam_buffer  = 
+            CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, cam)
+                .expect("Failed to create buffer");
+
         let shader = cs::Shader::load(device.clone()).expect("Failed to create shader module");
 
         return Tracer {
             device,
             queue,
             data_buffer,
+            scene_buffer,
+            cam_buffer,
             shader,
         };
     }
@@ -82,6 +113,10 @@ impl Tracer {
         let set = Arc::new(
             PersistentDescriptorSet::start(layout.clone())
                 .add_buffer(self.data_buffer.clone())
+                .unwrap()
+                .add_buffer(self.scene_buffer.clone())
+                .unwrap()
+                .add_buffer(self.cam_buffer.clone())
                 .unwrap()
                 .build()
                 .unwrap(),
