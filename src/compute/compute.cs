@@ -23,9 +23,28 @@ struct Ray {
 };
 
 struct Sphere {
-    vec3 position;
+    vec3 center;
     float radius;
 };
+
+bool ray_sphere_intersection(Ray ray, Sphere sphere) {
+    vec3 oc = ray.position - sphere.center;
+    float a = dot(ray.direction, ray.direction);
+    float b = 2.0 * dot(oc, ray.direction);
+    float c = dot(oc, oc) - sphere.radius * sphere.radius;
+    float discriminant = b * b - 4 * a * c;
+    return (discriminant > 0);
+}
+
+uint ray_color(Ray ray) {
+    Sphere sphere;
+    sphere.center = vec3(0, 0, -1);
+    sphere.radius = 0.5;
+    if (ray_sphere_intersection(ray, sphere))
+        return 0xff0000;
+    
+    return 0xb3cfff;
+}
 
 void main() {
     uint x = gl_GlobalInvocationID.x % scene.width;
@@ -43,5 +62,9 @@ void main() {
     float u = float(x) / float(scene.width);
     float v = float(y) / float(scene.height);
 
-    buf.data[x + y * scene.width] = 0xb3cfff;
+    Ray ray;
+    ray.position = origin;
+    ray.direction = lower_left + u * horizontal + v * vertical - origin;
+
+    buf.data[x + y * scene.width] = ray_color(ray);
 }
