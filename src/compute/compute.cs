@@ -27,21 +27,48 @@ struct Sphere {
     float radius;
 };
 
-bool ray_sphere_intersection(Ray ray, Sphere sphere) {
+uint get_color(vec3 color) {
+    uint r = uint(color.r * 255.0);
+    uint g = uint(color.g * 255.0);
+    uint b = uint(color.b * 255.0);
+    return (r << 16) | (g << 8) | (b);
+}
+
+vec3 ray_at(Ray ray, float t) {
+    return ray.position + t * ray.direction;
+}
+
+bool is_on_sphere(vec3 p, Sphere sphere) {
+    float length = length(p - sphere.center);
+    if (abs(length - sphere.radius) > 0.1)
+        return false;
+    return true;
+}
+
+float ray_hit(Ray ray, Sphere sphere) {
     vec3 oc = ray.position - sphere.center;
     float a = dot(ray.direction, ray.direction);
-    float b = 2.0 * dot(oc, ray.direction);
+    float half_b = dot(oc, ray.direction);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
-    float discriminant = b * b - 4 * a * c;
-    return (discriminant > 0);
+    float discriminant = half_b * half_b - a * c;
+    if (discriminant < 0)
+        return -1.0;
+    else 
+        return (-half_b - sqrt(discriminant)) / a;
 }
 
 uint ray_color(Ray ray) {
     Sphere sphere;
     sphere.center = vec3(0, 0, -1);
     sphere.radius = 0.5;
-    if (ray_sphere_intersection(ray, sphere))
-        return 0xff0000;
+
+    float t = ray_hit(ray, sphere);
+
+    if (t > 0.0) {
+        vec3 normal = normalize(ray_at(ray, t) - sphere.center);
+        normal = (normal + 1.0) * 0.5;
+        return get_color(normal);
+    }
     
     return 0xb3cfff;
 }
