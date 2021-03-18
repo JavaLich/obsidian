@@ -17,6 +17,12 @@ layout (set = 0, binding = 2) buffer Camera {
     vec3 position;
 } cam;
 
+struct HitRecord {
+    vec3 point;
+    vec3 normal;
+    float t;
+};
+
 struct Ray {
     vec3 position;
     vec3 direction;
@@ -45,16 +51,29 @@ bool is_on_sphere(vec3 p, Sphere sphere) {
     return true;
 }
 
-float ray_hit(Ray ray, Sphere sphere) {
+bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_max) {
     vec3 oc = ray.position - sphere.center;
     float a = dot(ray.direction, ray.direction);
     float half_b = dot(oc, ray.direction);
     float c = dot(oc, oc) - sphere.radius * sphere.radius;
     float discriminant = half_b * half_b - a * c;
+
     if (discriminant < 0)
-        return -1.0;
-    else 
-        return (-half_b - sqrt(discriminant)) / a;
+        return false;
+
+    float sqrtd = sqrt(discriminant);
+    float root = (-half_b - sqrtd) / a ;
+    if (root < t_min || t_max < root) {
+        root = (-half_b + sqrtd) / a;
+        if (root < t_min || t_max < root)
+            return false;
+    }
+
+    hit.t = root;
+    hit.point = ray_at(ray, hit.t);
+    hit.normal = (hit.point - sphere.center) / sphere.radius;
+    
+    return true;
 }
 
 uint ray_color(Ray ray) {
@@ -62,14 +81,11 @@ uint ray_color(Ray ray) {
     sphere.center = vec3(0, 0, -1);
     sphere.radius = 0.5;
 
-    float t = ray_hit(ray, sphere);
-
-    if (t > 0.0) {
-        vec3 normal = normalize(ray_at(ray, t) - sphere.center);
-        normal = (normal + 1.0) * 0.5;
-        return get_color(normal);
+    HitRecord hit;
+    if (ray_hit(ray, sphere, hit, 0, 100.0)) {
+        return get_color((normalize(hit.normal) + 1.0) / 2.0);
     }
-    
+
     return 0xb3cfff;
 }
 
