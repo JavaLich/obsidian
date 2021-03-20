@@ -1,21 +1,6 @@
 #version 450
 
-layout(local_size_x = 48, local_size_y = 1, local_size_z = 1) in;
-
-layout(set = 0, binding = 0) buffer Data {
-    uint data[];
-} buf;
-
-layout(set = 0, binding = 1) buffer SceneData {
-    uint width;
-    uint height;
-} scene;
-
-layout (set = 0, binding = 2) buffer Camera {
-    float viewport_height;
-    float focal_length;
-    vec3 position;
-} cam;
+#define NUM_SPHERES 10
 
 struct HitRecord {
     vec3 point;
@@ -34,6 +19,24 @@ struct Sphere {
     vec3 center;
     float radius;
 };
+
+layout(local_size_x = 48, local_size_y = 1, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) buffer Data {
+    uint data[];
+} buf;
+
+layout(set = 0, binding = 1) buffer SceneData {
+    Sphere spheres[NUM_SPHERES];
+    uint width;
+    uint height;
+} scene;
+
+layout (set = 0, binding = 2) buffer Camera {
+    float viewport_height;
+    float focal_length;
+    vec3 position;
+} cam;
 
 void set_front_face(inout HitRecord rec, Ray r, vec3 outward_normal) {
     rec.front_face = dot(r.direction, outward_normal) < 0;
@@ -85,13 +88,11 @@ bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_m
 }
 
 uint ray_color(Ray ray) {
-    Sphere sphere;
-    sphere.center = vec3(0, 0, -1);
-    sphere.radius = 0.5;
-
     HitRecord hit;
-    if (ray_hit(ray, sphere, hit, 0, 100.0)) {
-        return get_color((normalize(hit.normal) + 1.0) / 2.0);
+    for (int i = 0; i < NUM_SPHERES; i++) {
+        if (ray_hit(ray, scene.spheres[i], hit, 0, 100.0)) {
+            return get_color((normalize(hit.normal) + 1.0) / 2.0);
+        }
     }
 
     return 0xb3cfff;

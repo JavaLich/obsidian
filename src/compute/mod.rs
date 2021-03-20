@@ -13,7 +13,16 @@ use std::sync::Arc;
 
 mod cs;
 
+const NUM_SPHERES: usize = 10;
+
+#[derive(Copy, Clone)]
+struct Sphere {
+    center: [f32; 3],
+    radius: f32
+}
+
 struct SceneData {
+    spheres: [Sphere; NUM_SPHERES],
     _width: u32,
     _height: u32,
 }
@@ -69,7 +78,14 @@ impl Tracer {
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, data)
                 .expect("Failed to create buffer");
 
+        let mut spheres = [Sphere {center: [0.0, 0.0, -1.0], radius: 0.5}; NUM_SPHERES];
+
+        for i in 1..NUM_SPHERES {
+            spheres[i].center[0] = i as f32 * 1.5;
+        }
+
         let scene_data = SceneData {
+            spheres,
             _width: crate::WIDTH as u32,
             _height: crate::HEIGHT as u32,
         };
