@@ -89,12 +89,22 @@ bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_m
 
 uint ray_color(Ray ray) {
     HitRecord hit;
+    bool is_hit = false;
+    float t_max = 100.0;
+    float t_min = 0.0;
+    float closest = t_max;
+
     for (int i = 0; i < NUM_SPHERES; i++) {
-        if (ray_hit(ray, scene.spheres[i], hit, 0, 100.0)) {
-            return get_color((normalize(hit.normal) + 1.0) / 2.0);
+        HitRecord temp;
+        if (ray_hit(ray, scene.spheres[i], temp, t_min, closest)) {
+            is_hit = true;
+            closest = temp.t;
+            hit = temp;
         }
     }
 
+    if (is_hit)
+        return get_color((normalize(hit.normal) + 1.0) / 2.0);
     return 0xb3cfff;
 }
 

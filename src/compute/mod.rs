@@ -81,7 +81,7 @@ impl Tracer {
         let mut spheres = [Sphere {center: [0.0, 0.0, -1.0], radius: 0.5}; NUM_SPHERES];
 
         for i in 1..NUM_SPHERES {
-            spheres[i].center[0] = i as f32 * 1.5;
+            spheres[i].center[2] = -1.0 - i as f32 * 1.5;
         }
 
         let scene_data = SceneData {
