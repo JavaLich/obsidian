@@ -17,8 +17,15 @@ struct Ray {
 
 struct Sphere {
     vec3 center;
-    float radius;
+    float radius; 
 };
+
+struct Camera {
+    vec3 origin;
+    vec3 lower_left_corner;
+    vec3 horizontal;
+    vec3 vertical;
+} camera;
 
 layout(local_size_x = 48, local_size_y = 1, local_size_z = 1) in;
 
@@ -32,15 +39,19 @@ layout(set = 0, binding = 1) buffer SceneData {
     uint height;
 } scene;
 
-layout (set = 0, binding = 2) buffer Camera {
+layout (set = 0, binding = 2) buffer CamData {
     float viewport_height;
     float focal_length;
     vec3 position;
-} cam;
+} cam_data;
 
 void set_front_face(inout HitRecord rec, Ray r, vec3 outward_normal) {
     rec.front_face = dot(r.direction, outward_normal) < 0;
     rec.normal = rec.front_face ? outward_normal : -outward_normal;
+}
+
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453);
 }
 
 uint get_color(vec3 color) {
@@ -52,6 +63,14 @@ uint get_color(vec3 color) {
 
 vec3 ray_at(Ray ray, float t) {
     return ray.position + t * ray.direction;
+}
+
+Ray get_ray(float u, float v) {
+    Ray ray;
+    ray.position = camera.origin;
+    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
+
+    return ray;
 }
 
 bool is_on_sphere(vec3 p, Sphere sphere) {
@@ -105,6 +124,7 @@ uint ray_color(Ray ray) {
 
     if (is_hit)
         return get_color((normalize(hit.normal) + 1.0) / 2.0);
+
     return 0xb3cfff;
 }
 
@@ -113,13 +133,13 @@ void main() {
     uint y = gl_GlobalInvocationID.x / scene.width;
 
     float aspect_ratio = float(scene.width) / float(scene.height); 
-    float viewport_width = aspect_ratio * cam.viewport_height;
-    float viewport_height = cam.viewport_height;
+    float viewport_width = aspect_ratio * cam_data.viewport_height;
+    float viewport_height = cam_data.viewport_height;
 
     vec3 origin = vec3(0);
     vec3 horizontal = vec3(viewport_width, 0, 0);
     vec3 vertical = vec3(0, viewport_height, 0);
-    vec3 lower_left = origin - horizontal/2 - vertical/2 - vec3(0, 0, cam.focal_length);
+    vec3 lower_left = origin - horizontal/2 - vertical/2 - vec3(0, 0, cam_data.focal_length);
 
     float u = float(x) / float(scene.width);
     float v = float(y) / float(scene.height);
