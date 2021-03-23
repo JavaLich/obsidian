@@ -61,6 +61,25 @@ uint get_color(vec3 color) {
     return (r << 16) | (g << 8) | (b);
 }
 
+float clamp(float x, float min, float max) {
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
+}
+
+vec3 write_color(vec3 color, int num_samples) {
+    float r = color.x;
+    float g = color.y;
+    float b = color.z;
+
+    float scale = 1.0 / num_samples;
+    r *= scale;
+    g *= scale;
+    b *= scale;
+
+    return vec3(256 * clamp(r, 0, 0.999), 256 * clamp(g, 0, 0.999), 256 * clamp(b, 0, 0.999));
+}
+
 vec3 ray_at(Ray ray, float t) {
     return ray.position + t * ray.direction;
 }
@@ -69,7 +88,6 @@ Ray get_ray(float u, float v) {
     Ray ray;
     ray.position = camera.origin;
     ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
-
     return ray;
 }
 
@@ -135,18 +153,19 @@ void main() {
     float aspect_ratio = float(scene.width) / float(scene.height); 
     float viewport_width = aspect_ratio * cam_data.viewport_height;
     float viewport_height = cam_data.viewport_height;
+    int num_samples = 100;
 
-    vec3 origin = vec3(0);
-    vec3 horizontal = vec3(viewport_width, 0, 0);
-    vec3 vertical = vec3(0, viewport_height, 0);
-    vec3 lower_left = origin - horizontal/2 - vertical/2 - vec3(0, 0, cam_data.focal_length);
+    camera.origin = vec3(0);
+    camera.horizontal = vec3(viewport_width, 0, 0);
+    camera.vertical = vec3(0, viewport_height, 0);
+    camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, cam_data.focal_length);
 
     float u = float(x) / float(scene.width);
     float v = float(y) / float(scene.height);
 
     Ray ray;
-    ray.position = origin;
-    ray.direction = lower_left + u * horizontal + v * vertical - origin;
+    ray.position = camera.origin;
+    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
 
     buf.data[x + y * scene.width] = ray_color(ray);
 }
