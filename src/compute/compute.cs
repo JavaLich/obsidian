@@ -61,12 +61,6 @@ uint get_color(vec3 color) {
     return (r << 16) | (g << 8) | (b);
 }
 
-float clamp(float x, float min, float max) {
-    if (x < min) return min;
-    if (x > max) return max;
-    return x;
-}
-
 vec3 write_color(vec3 color, int num_samples) {
     float r = color.x;
     float g = color.y;
@@ -77,7 +71,7 @@ vec3 write_color(vec3 color, int num_samples) {
     g *= scale;
     b *= scale;
 
-    return vec3(256 * clamp(r, 0, 0.999), 256 * clamp(g, 0, 0.999), 256 * clamp(b, 0, 0.999));
+    return vec3(256 * clamp(r, 0.0, 0.999), 256 * clamp(g, 0.0, 0.999), 256 * clamp(b, 0.0, 0.999));
 }
 
 vec3 ray_at(Ray ray, float t) {
@@ -124,7 +118,17 @@ bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_m
     return true;
 }
 
-uint ray_color(Ray ray) {
+uint ray_color() {
+    uint x = gl_GlobalInvocationID.x % scene.width;
+    uint y = gl_GlobalInvocationID.x / scene.width;
+
+    float u = float(x) / float(scene.width);
+    float v = float(y) / float(scene.height);
+
+    Ray ray;
+    ray.position = camera.origin;
+    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
+
     HitRecord hit;
     bool is_hit = false;
     float t_max = 100.0;
@@ -160,12 +164,5 @@ void main() {
     camera.vertical = vec3(0, viewport_height, 0);
     camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, cam_data.focal_length);
 
-    float u = float(x) / float(scene.width);
-    float v = float(y) / float(scene.height);
-
-    Ray ray;
-    ray.position = camera.origin;
-    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
-
-    buf.data[x + y * scene.width] = ray_color(ray);
+    buf.data[x + y * scene.width] = ray_color();
 }
