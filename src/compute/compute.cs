@@ -25,6 +25,7 @@ struct Camera {
     vec3 lower_left_corner;
     vec3 horizontal;
     vec3 vertical;
+    int num_samples;
 } camera;
 
 layout(local_size_x = 48, local_size_y = 1, local_size_z = 1) in;
@@ -71,7 +72,7 @@ vec3 write_color(vec3 color, int num_samples) {
     g *= scale;
     b *= scale;
 
-    return vec3(256 * clamp(r, 0.0, 0.999), 256 * clamp(g, 0.0, 0.999), 256 * clamp(b, 0.0, 0.999));
+    return vec3(clamp(r, 0.0, 0.999), clamp(g, 0.0, 0.999), clamp(b, 0.0, 0.999));
 }
 
 vec3 ray_at(Ray ray, float t) {
@@ -118,22 +119,14 @@ bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_m
     return true;
 }
 
-uint ray_color() {
-    uint x = gl_GlobalInvocationID.x % scene.width;
-    uint y = gl_GlobalInvocationID.x / scene.width;
-
-    float u = float(x) / float(scene.width);
-    float v = float(y) / float(scene.height);
-
-    Ray ray;
-    ray.position = camera.origin;
-    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
-
+vec3 ray_color(Ray ray) {
     HitRecord hit;
     bool is_hit = false;
     float t_max = 100.0;
     float t_min = 0.0;
     float closest = t_max;
+
+    vec3 ret_color = vec3(0.0, 0.8, 1.0);
 
     for (int i = 0; i < NUM_SPHERES; i++) {
         HitRecord temp;
@@ -144,25 +137,36 @@ uint ray_color() {
         }
     }
 
-    if (is_hit)
-        return get_color((normalize(hit.normal) + 1.0) / 2.0);
+    if (is_hit) {
+        ret_color = (normalize(hit.normal) + 1.0) / 2.0; 
+    }
 
-    return 0xb3cfff;
+    return ret_color;
 }
 
 void main() {
     uint x = gl_GlobalInvocationID.x % scene.width;
     uint y = gl_GlobalInvocationID.x / scene.width;
 
+
     float aspect_ratio = float(scene.width) / float(scene.height); 
     float viewport_width = aspect_ratio * cam_data.viewport_height;
     float viewport_height = cam_data.viewport_height;
-    int num_samples = 100;
 
     camera.origin = vec3(0);
     camera.horizontal = vec3(viewport_width, 0, 0);
     camera.vertical = vec3(0, viewport_height, 0);
     camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, cam_data.focal_length);
+    camera.num_samples = 10;
 
-    buf.data[x + y * scene.width] = ray_color();
+    vec3 color = vec3(0);
+
+    for (int i = 0; i < camera.num_samples; i++) {
+        float u = float(x + rand(vec2(x * i, x))) / float(scene.width - 1);
+        float v = float(y + rand(vec2(y, y * i))) / float(scene.height - 1);
+        Ray ray = get_ray(u, v);
+        color += ray_color(ray);
+    }
+
+    buf.data[x + y * scene.width] = get_color(write_color(color, camera.num_samples));
 }
