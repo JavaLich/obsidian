@@ -55,6 +55,17 @@ float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898,78.233))) * 43758.5453);
 }
 
+vec3 rand() {
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+    vec2 co = vec2(float(x), float(y));
+    return vec3(rand(co), rand(co * 2.0), rand(co * 3.0));
+}
+
+vec3 rand(float min, float max) {
+    return rand() * (max - min) + min;
+}
+
 uint get_color(vec3 color) {
     uint r = uint(color.r * 255.0);
     uint g = uint(color.g * 255.0);
