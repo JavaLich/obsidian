@@ -66,6 +66,15 @@ vec3 rand(float min, float max) {
     return rand() * (max - min) + min;
 }
 
+vec3 random_in_unit_sphere() {
+    while (true) {
+        vec3 p = rand();
+        float length_squared = p.x * p.x + p.y * p.y + p.z * p.z;
+        if (length_squared >= 1.) continue;
+        return p;
+    }
+}
+
 uint get_color(vec3 color) {
     uint r = uint(color.r * 255.0);
     uint g = uint(color.g * 255.0);
@@ -150,6 +159,9 @@ vec3 ray_color(Ray ray) {
 
     if (is_hit) {
         ret_color = (normalize(hit.normal) + 1.0) / 2.0; 
+        vec3 target = hit.point + hit.normal + random_in_unit_sphere();
+        Ray new_ray = {hit.point, target - hit.point};
+        return 0.5 * ray_color(new_ray);
     }
 
     return ret_color;
