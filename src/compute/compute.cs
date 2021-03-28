@@ -1,10 +1,10 @@
 #version 450
 
 #define NUM_SPHERES 10
+#define MAX_RAYS 3
 
 struct HitRecord {
-    vec3 point;
-    vec3 normal;
+    vec3 point; vec3 normal;
     float t;
     bool front_face;
 
@@ -139,14 +139,9 @@ bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_m
     return true;
 }
 
-vec3 ray_color(Ray ray) {
-    HitRecord hit;
-    bool is_hit = false;
-    float t_max = 100.0;
-    float t_min = 0.0;
+bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
     float closest = t_max;
-
-    vec3 ret_color = vec3(0.0, 0.8, 1.0);
+    bool is_hit = false;
 
     for (int i = 0; i < NUM_SPHERES; i++) {
         HitRecord temp;
@@ -154,14 +149,43 @@ vec3 ray_color(Ray ray) {
             is_hit = true;
             closest = temp.t;
             hit = temp;
-        }
+        }     
     }
 
-    if (is_hit) {
+    return is_hit;
+}
+
+vec3 ray_color(Ray ray) {
+    HitRecord hit;
+    float t_max = 1000.0;
+    float t_min = 0.0;
+
+    vec3 ret_color = vec3(0.0, 0.8, 1.0);
+
+    if (!world_hit(ray, hit, t_min, t_max)) 
+        return ret_color;
+    HitRecord stack[MAX_RAYS];
+    stack[0] = hit;
+    uint length = 1;
+    int i = MAX_RAYS;
+
+    while (length > 0 && i > 0) {
+        length--;
+        HitRecord temp = stack[length];
+        vec3 target = temp.point + temp.normal + random_in_unit_sphere();
+        Ray new_ray = {temp.point, target - temp.point};
+        HitRecord new;
+        if (world_hit(new_ray, new, t_min, t_max)) {
+            length++;
+            if (MAX_RAYS <= length)
+                break;
+            stack[length - 1] = new;
+        }
+        i--;
+    }
+
+    if (world_hit(ray, hit, t_min, t_max)) {
         ret_color = (normalize(hit.normal) + 1.0) / 2.0; 
-        vec3 target = hit.point + hit.normal + random_in_unit_sphere();
-        Ray new_ray = {hit.point, target - hit.point};
-        return 0.5 * ray_color(new_ray);
     }
 
     return ret_color;
@@ -180,7 +204,7 @@ void main() {
     camera.horizontal = vec3(viewport_width, 0, 0);
     camera.vertical = vec3(0, viewport_height, 0);
     camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, cam_data.focal_length);
-    camera.num_samples = 10;
+    camera.num_samples = 1;
 
     vec3 color = vec3(0);
 
