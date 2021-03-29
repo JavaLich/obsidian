@@ -96,7 +96,7 @@ impl Tracer {
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, scene_data)
                 .expect("Failed to create buffer");
         let cam = Camera {
-            _position: [0.0; 3],
+            _position: [0.0, -1.0, -1.0],
             _vp_height: 2.0,
             _focal_length: 1.0,
         };

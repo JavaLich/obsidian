@@ -2,17 +2,19 @@
 
 #define NUM_SPHERES 10
 #define MAX_RAYS 3
+#define SKY_COLOR vec3(0.0, 0.8, 1.0)
 
 struct HitRecord {
-    vec3 point; vec3 normal;
+    vec3 point; 
+    vec3 normal;
     float t;
     bool front_face;
-
 };
 
 struct Ray {
     vec3 position;
     vec3 direction;
+    vec3 energy;
 };
 
 struct Sphere {
@@ -103,6 +105,7 @@ Ray get_ray(float u, float v) {
     Ray ray;
     ray.position = camera.origin;
     ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
+    ray.energy = vec3(1.0);
     return ray;
 }
 
@@ -155,40 +158,35 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
     return is_hit;
 }
 
-vec3 ray_color(Ray ray) {
+vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
+    if (is_hit) {
+        vec3 specular = vec3(0.6);
+        ray.position = hit.point + hit.normal * 0.001f;
+        ray.direction = reflect(ray.direction, hit.normal);
+        ray.energy *= specular;
+        return vec3(0);
+    } else {
+        ray.energy = vec3(0.0);
+
+        return SKY_COLOR;
+    }
+}
+
+vec3 ray_color(inout Ray ray) {
     HitRecord hit;
     float t_max = 1000.0;
     float t_min = 0.0;
 
-    vec3 ret_color = vec3(0.0, 0.8, 1.0);
+    vec3 result = vec3(0.0);
+    for (int i = 0; i < MAX_RAYS; i++) {
+        bool is_hit = world_hit(ray, hit, t_min, t_max);
+        result += ray.energy * shade(ray, hit, is_hit);
 
-    if (!world_hit(ray, hit, t_min, t_max)) 
-        return ret_color;
-    HitRecord stack[MAX_RAYS];
-    stack[0] = hit;
-    uint length = 1;
-    int i = MAX_RAYS;
-
-    while (length > 0 && i > 0) {
-        length--;
-        HitRecord temp = stack[length];
-        vec3 target = temp.point + temp.normal + random_in_unit_sphere();
-        Ray new_ray = {temp.point, target - temp.point};
-        HitRecord new;
-        if (world_hit(new_ray, new, t_min, t_max)) {
-            length++;
-            if (MAX_RAYS <= length)
-                break;
-            stack[length - 1] = new;
-        }
-        i--;
+        if (ray.energy == vec3(0.0))
+            break;
     }
 
-    if (world_hit(ray, hit, t_min, t_max)) {
-        ret_color = (normalize(hit.normal) + 1.0) / 2.0; 
-    }
-
-    return ret_color;
+    return result;
 }
 
 void main() {
@@ -200,11 +198,11 @@ void main() {
     float viewport_width = aspect_ratio * cam_data.viewport_height;
     float viewport_height = cam_data.viewport_height;
 
-    camera.origin = vec3(0);
+    camera.origin = cam_data.position;
     camera.horizontal = vec3(viewport_width, 0, 0);
     camera.vertical = vec3(0, viewport_height, 0);
     camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, cam_data.focal_length);
-    camera.num_samples = 1;
+    camera.num_samples = 10;
 
     vec3 color = vec3(0);
 
