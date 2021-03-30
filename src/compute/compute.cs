@@ -43,9 +43,9 @@ layout(set = 0, binding = 1) buffer SceneData {
 } scene;
 
 layout (set = 0, binding = 2) buffer CamData {
+    vec3 position;
     float viewport_height;
     float focal_length;
-    vec3 position;
 } cam_data;
 
 void set_front_face(inout HitRecord rec, Ray r, vec3 outward_normal) {
