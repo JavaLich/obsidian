@@ -116,6 +116,12 @@ bool is_on_sphere(vec3 p, Sphere sphere) {
     return true;
 }
 
+vec3 sky_color(Ray r) {
+    vec3 unit_direction = normalize(r.direction);
+    float t = 0.5*(unit_direction.y + 1.0);
+    return (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
+}
+
 bool ray_hit(Ray ray, Sphere sphere, inout HitRecord hit, float t_min, float t_max) {
     vec3 oc = ray.position - sphere.center;
     float a = dot(ray.direction, ray.direction);
@@ -168,7 +174,7 @@ vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
     } else {
         ray.energy = vec3(0.0);
 
-        return SKY_COLOR;
+        return sky_color(ray);
     }
 }
 
