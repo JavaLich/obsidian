@@ -116,6 +116,11 @@ impl Tracer {
         };
     }
 
+    pub fn set_camera_pos(&mut self, pos: [f32; 3]) {
+        let mut content = self.cam_buffer.write().unwrap();
+        content._position = pos;
+    }
+
     pub fn compute(&self) -> Vec<u32> {
         let compute_pipeline = Arc::new(
             ComputePipeline::new(

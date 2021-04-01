@@ -7,6 +7,6 @@ const WIDTH: usize = 800;
 const HEIGHT: usize = 600;
 
 fn main() {
-    let tracer = Tracer::init();
-    graphics::run(&tracer);
+    let mut tracer = Tracer::init();
+    graphics::run(&mut tracer);
 }
