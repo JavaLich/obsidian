@@ -28,7 +28,7 @@ struct SceneData {
 }
 
 struct Camera {
-    _position: [f32; 3],
+    position: [f32; 3],
     _vp_height: f32,
     _focal_length: f32,
 }
@@ -96,7 +96,7 @@ impl Tracer {
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, scene_data)
                 .expect("Failed to create buffer");
         let cam = Camera {
-            _position: [0.0, -1.0, 1.0],
+            position: [0.0, -1.0, 1.0],
             _vp_height: 2.0,
             _focal_length: 1.0,
         };
@@ -118,7 +118,14 @@ impl Tracer {
 
     pub fn set_camera_pos(&mut self, pos: [f32; 3]) {
         let mut content = self.cam_buffer.write().unwrap();
-        content._position = pos;
+        content.position = pos;
+    }
+
+    pub fn change_camera_pos(&mut self, x: f32, y: f32, z: f32) {
+        let mut content = self.cam_buffer.write().unwrap();
+        content.position[0] += x;
+        content.position[1] += y;
+        content.position[2] += z;
     }
 
     pub fn compute(&self) -> Vec<u32> {
