@@ -19,10 +19,10 @@ pub fn run(tracer: &mut Tracer) {
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if window.is_key_down(Key::W) {
-            tracer.change_camera_pos(0f32, 0f32, speed);
+            tracer.change_camera_pos(0f32, 0f32, -speed);
         }
         if window.is_key_down(Key::S) {
-            tracer.change_camera_pos(0f32, 0f32, -speed);
+            tracer.change_camera_pos(0f32, 0f32, speed);
         }
         if window.is_key_down(Key::A) {
             tracer.change_camera_pos(-speed, 0f32, 0f32);

@@ -165,12 +165,14 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
 }
 
 vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
+    vec4 directional = vec4(1.0, 1.0, 1.0, 0.5);
     if (is_hit) {
         vec3 specular = vec3(0.6);
+        vec3 albedo = vec3(0.8);
         ray.position = hit.point + hit.normal * 0.001f;
         ray.direction = reflect(ray.direction, hit.normal);
         ray.energy *= specular;
-        return vec3(0);
+        return clamp((dot(hit.normal, directional.xyz) * -1) * directional.w * albedo, 0.0, 1.0);
     } else {
         ray.energy = vec3(0.0);
 
