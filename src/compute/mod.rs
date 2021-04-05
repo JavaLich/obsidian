@@ -18,13 +18,18 @@ const NUM_SPHERES: usize = 10;
 #[derive(Copy, Clone)]
 struct Sphere {
     center: [f32; 3],
-    radius: f32
+    radius: f32,
 }
 
 struct SceneData {
     spheres: [Sphere; NUM_SPHERES],
+    sun: DirectionalLight,
     _width: u32,
     _height: u32,
+}
+
+struct DirectionalLight {
+    direction: [f32; 4],
 }
 
 struct Camera {
@@ -78,7 +83,10 @@ impl Tracer {
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, data)
                 .expect("Failed to create buffer");
 
-        let mut spheres = [Sphere {center: [0.0, 0.0, -1.0], radius: 0.5}; NUM_SPHERES];
+        let mut spheres = [Sphere {
+            center: [0.0, 0.0, -1.0],
+            radius: 0.5,
+        }; NUM_SPHERES];
 
         for i in 1..NUM_SPHERES - 1 {
             spheres[i].center[0] = -1.0 - i as f32 * 1.5;
@@ -87,8 +95,13 @@ impl Tracer {
         spheres[9].center = [0.0, 100.5, -1.0];
         spheres[9].radius = 100f32;
 
+        let sun = DirectionalLight {
+            direction: [1.0, 1.0, 1.0, 0.5],
+        };
+
         let scene_data = SceneData {
             spheres,
+            sun,
             _width: crate::WIDTH as u32,
             _height: crate::HEIGHT as u32,
         };
@@ -100,7 +113,7 @@ impl Tracer {
             _vp_height: 2.0,
             _focal_length: 1.0,
         };
-        let cam_buffer  = 
+        let cam_buffer =
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, cam)
                 .expect("Failed to create buffer");
 
