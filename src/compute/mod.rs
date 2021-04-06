@@ -96,7 +96,7 @@ impl Tracer {
         spheres[9].radius = 100f32;
 
         let sun = DirectionalLight {
-            direction: [1.0, 1.0, 1.0, 0.5],
+            direction: [0.0, 1.0, -1.0, 0.5],
         };
 
         let scene_data = SceneData {
