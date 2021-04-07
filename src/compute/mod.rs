@@ -84,19 +84,16 @@ impl Tracer {
                 .expect("Failed to create buffer");
 
         let mut spheres = [Sphere {
-            center: [0.0, 0.0, -1.0],
+            center: [0.0, -1.0, -1.0],
             radius: 0.5,
         }; NUM_SPHERES];
 
-        for i in 1..NUM_SPHERES - 1 {
+        for i in 1..NUM_SPHERES {
             spheres[i].center[0] = -1.0 - i as f32 * 1.5;
         }
 
-        spheres[9].center = [0.0, 100.5, -1.0];
-        spheres[9].radius = 100f32;
-
         let sun = DirectionalLight {
-            direction: [0.0, 1.0, -1.0, 0.5],
+            direction: [0.0, 1.0, 0.0, 0.5],
         };
 
         let scene_data = SceneData {

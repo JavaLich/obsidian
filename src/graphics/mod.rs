@@ -30,6 +30,12 @@ pub fn run(tracer: &mut Tracer) {
         if window.is_key_down(Key::D) {
             tracer.change_camera_pos(speed, 0f32, 0f32);
         }
+        if window.is_key_down(Key::LeftShift) {
+            tracer.change_camera_pos(0f32, speed, 0f32);
+        }
+        if window.is_key_down(Key::Space) {
+            tracer.change_camera_pos(0f32, -speed, 0f32);
+        }
 
         let pixels = tracer.compute();
 
