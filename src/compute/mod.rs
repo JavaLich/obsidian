@@ -93,7 +93,7 @@ impl Tracer {
         }
 
         let sun = DirectionalLight {
-            direction: [0.0, 1.0, 0.0, 0.5],
+            direction: [0.5, 1.0, 0.0, 0.5],
         };
 
         let scene_data = SceneData {

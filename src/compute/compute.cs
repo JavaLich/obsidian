@@ -202,8 +202,8 @@ vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
         ray.energy *= specular;
 
         Ray shadowRay;
-        shadowRay.direction = hit.point + hit.normal * 0.001f;
-        shadowRay.position = -1 * directional.xyz;
+        shadowRay.direction = -1 * directional.xyz;
+        shadowRay.position = hit.point + hit.normal * 0.001f;
         shadowRay.energy = vec3(1.0);
 
         HitRecord shadowHit;
