@@ -7,6 +7,8 @@
 struct HitRecord {
     vec3 point; 
     vec3 normal;
+    vec3 specular;
+    vec3 albedo;
     float t;
     bool front_face;
     float distance;
@@ -103,6 +105,19 @@ vec3 write_color(vec3 color, int num_samples) {
     return vec3(clamp(r, 0.0, 0.999), clamp(g, 0.0, 0.999), clamp(b, 0.0, 0.999));
 }
 
+HitRecord create_hit_record() {
+    HitRecord hit;
+    hit.point = vec3(0);
+    hit.distance = 0.0;
+    hit.t = 0.0;
+    hit.albedo = vec3(0);
+    hit.specular = vec3(0);
+    hit.normal = vec3(0);
+    hit.front_face = false;
+    
+    return hit;
+}
+
 vec3 ray_at(Ray ray, float t) {
     return ray.position + t * ray.direction;
 }
@@ -171,7 +186,7 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
     float closest = t_max;
     bool is_hit = false;
 
-    HitRecord plane;
+    HitRecord plane = create_hit_record();
     plane.distance = closest;
     if (intersect_ground_plane(ray, plane)) {
         is_hit = true;
@@ -180,7 +195,7 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
     }
 
     for (int i = 0; i < NUM_SPHERES; i++) {
-        HitRecord temp;
+        HitRecord temp = create_hit_record();
         if (ray_hit(ray, scene.spheres[i], temp, t_min, closest)) {
             is_hit = true;
             closest = temp.t;
@@ -206,7 +221,7 @@ vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
         shadowRay.position = hit.point + hit.normal * 0.001f;
         shadowRay.energy = vec3(1.0);
 
-        HitRecord shadowHit;
+        HitRecord shadowHit = create_hit_record();
 
         if (world_hit(shadowRay, shadowHit, 0.0, 1000.0)) {
             return vec3(0.0);
@@ -221,7 +236,7 @@ vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
 }
 
 vec3 ray_color(inout Ray ray) {
-    HitRecord hit;
+    HitRecord hit = create_hit_record();
     float t_max = 1000.0;
     float t_min = 0.0;
 
