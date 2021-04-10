@@ -21,8 +21,18 @@ struct Sphere {
     radius: f32,
 }
 
-struct SceneData {
+#[derive(Copy, Clone)]
+struct Material {
+    specular: [f32; 3],
+    albedo: [f32; 3],
+}
+
+struct SphereData {
     spheres: [Sphere; NUM_SPHERES],
+    materials: [Material; NUM_SPHERES]
+}
+
+struct SceneData {
     sun: DirectionalLight,
     _width: u32,
     _height: u32,
@@ -43,6 +53,7 @@ pub struct Tracer {
     queue: Arc<Queue>,
     data_buffer: Arc<CpuAccessibleBuffer<[u32; crate::WIDTH * crate::HEIGHT]>>,
     scene_buffer: Arc<CpuAccessibleBuffer<SceneData>>,
+    sphere_buffer: Arc<CpuAccessibleBuffer<SphereData>>,
     cam_buffer: Arc<CpuAccessibleBuffer<Camera>>,
     shader: cs::Shader,
 }
@@ -88,6 +99,11 @@ impl Tracer {
             radius: 0.5,
         }; NUM_SPHERES];
 
+        let mut materials = [Material {
+            specular: [0.4; 3],
+            albedo: [0.8; 3],
+        }; NUM_SPHERES];
+
         for i in 1..NUM_SPHERES {
             spheres[i].center[0] = -1.0 - i as f32 * 1.5;
         }
@@ -97,14 +113,24 @@ impl Tracer {
         };
 
         let scene_data = SceneData {
-            spheres,
             sun,
             _width: crate::WIDTH as u32,
             _height: crate::HEIGHT as u32,
         };
+
+        let sphere_data = SphereData {
+            spheres,
+            materials
+        };
+
         let scene_buffer =
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, scene_data)
                 .expect("Failed to create buffer");
+
+        let sphere_buffer =
+            CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, sphere_data)
+                .expect("Failed to create buffer");
+
         let cam = Camera {
             position: [0.0, -1.0, 1.0],
             _vp_height: 2.0,
@@ -121,6 +147,7 @@ impl Tracer {
             queue,
             data_buffer,
             scene_buffer,
+            sphere_buffer,
             cam_buffer,
             shader,
         };
@@ -158,6 +185,8 @@ impl Tracer {
                 .add_buffer(self.scene_buffer.clone())
                 .unwrap()
                 .add_buffer(self.cam_buffer.clone())
+                .unwrap()
+                .add_buffer(self.sphere_buffer.clone())
                 .unwrap()
                 .build()
                 .unwrap(),

@@ -25,6 +25,11 @@ struct Sphere {
     float radius; 
 };
 
+struct Material {
+    vec3 specular;
+    vec3 albedo;
+};
+
 struct DirectionalLight {
     vec4 direction;
 };
@@ -44,7 +49,6 @@ layout(set = 0, binding = 0) buffer Data {
 } buf;
 
 layout(set = 0, binding = 1) buffer SceneData {
-    Sphere spheres[NUM_SPHERES];
     DirectionalLight sun;
     uint width;
     uint height;
@@ -55,6 +59,11 @@ layout (set = 0, binding = 2) buffer CamData {
     float viewport_height;
     float focal_length;
 } cam_data;
+
+layout(set = 0, binding = 3) buffer SphereData {
+    Sphere spheres[NUM_SPHERES];
+    Material materials[NUM_SPHERES];
+} sphere_data;
 
 void set_front_face(inout HitRecord rec, Ray r, vec3 outward_normal) {
     rec.front_face = dot(r.direction, outward_normal) < 0;
@@ -192,14 +201,18 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
         is_hit = true;
         closest = plane.t;
         hit = plane;
+        hit.albedo = vec3(0.8);
+        hit.specular = vec3(0.4);
     }
 
     for (int i = 0; i < NUM_SPHERES; i++) {
         HitRecord temp = create_hit_record();
-        if (ray_hit(ray, scene.spheres[i], temp, t_min, closest)) {
+        if (ray_hit(ray, sphere_data.spheres[i], temp, t_min, closest)) {
             is_hit = true;
             closest = temp.t;
             hit = temp;
+            hit.albedo = sphere_data.materials[i].albedo;
+            hit.specular = sphere_data.materials[i].specular;
         }     
     }
     
@@ -210,8 +223,8 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
 vec3 shade(inout Ray ray, HitRecord hit, bool is_hit) {
     vec4 directional = scene.sun.direction;
     if (is_hit) {
-        vec3 specular = vec3(0.04);
-        vec3 albedo = vec3(0.8);
+        vec3 specular = hit.specular;
+        vec3 albedo = hit.albedo;
         ray.position = hit.point + hit.normal * 0.001f;
         ray.direction = reflect(ray.direction, hit.normal);
         ray.energy *= specular;
