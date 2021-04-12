@@ -1,6 +1,6 @@
 #version 450
 
-#define NUM_SPHERES 10
+#define NUM_SPHERES 5
 #define MAX_RAYS 5
 #define SKY_COLOR vec3(0.0, 0.8, 1.0)
 

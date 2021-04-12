@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 mod cs;
 
-const NUM_SPHERES: usize = 10;
+const NUM_SPHERES: usize = 5;
 
 #[derive(Copy, Clone)]
 struct Sphere {
@@ -53,8 +53,8 @@ pub struct Tracer {
     queue: Arc<Queue>,
     data_buffer: Arc<CpuAccessibleBuffer<[u32; crate::WIDTH * crate::HEIGHT]>>,
     scene_buffer: Arc<CpuAccessibleBuffer<SceneData>>,
-    sphere_buffer: Arc<CpuAccessibleBuffer<SphereData>>,
     cam_buffer: Arc<CpuAccessibleBuffer<Camera>>,
+    sphere_buffer: Arc<CpuAccessibleBuffer<SphereData>>,
     shader: cs::Shader,
 }
 
@@ -99,9 +99,9 @@ impl Tracer {
             radius: 0.5,
         }; NUM_SPHERES];
 
-        let mut materials = [Material {
-            specular: [0.4; 3],
-            albedo: [0.8; 3],
+        let materials = [Material {
+            specular: [0.4, 0.0, 0.0],
+            albedo: [0.8, 0.0, 0.0],
         }; NUM_SPHERES];
 
         for i in 1..NUM_SPHERES {
