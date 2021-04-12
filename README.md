@@ -2,7 +2,7 @@
 Raytracer written in Rust using Vulkan compute API
 
 ## Reflections
-![image](images/image.png | width=50)
+<img src="images/image.png" width="100" height="100"/>
 
 ## Materials
-![image2](images/image2.png | width=50)
+<img src="images/image2.png" width="100" height="100"/>
