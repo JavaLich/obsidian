@@ -1,4 +1,4 @@
 vulkano_shaders::shader! {
         ty: "compute",
-        path: "src/compute/compute.cs"
+        path: "src/compute/compute.glsl"
 }
