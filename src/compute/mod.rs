@@ -21,15 +21,10 @@ struct Sphere {
     radius: f32,
 }
 
-#[derive(Copy, Clone)]
-struct Material {
-    specular: [f32; 3],
-    albedo: [f32; 3],
-}
-
 struct SphereData {
     spheres: [Sphere; NUM_SPHERES],
-    materials: [Material; NUM_SPHERES]
+    specular: [[f32; 4]; NUM_SPHERES],
+    albedo: [[f32; 4]; NUM_SPHERES],
 }
 
 struct SceneData {
@@ -99,10 +94,19 @@ impl Tracer {
             radius: 0.5,
         }; NUM_SPHERES];
 
-        let materials = [Material {
-            specular: [0.4, 0.0, 0.0],
-            albedo: [0.8, 0.0, 0.0],
-        }; NUM_SPHERES];
+        let mut specular = [[0.0, 1.0, 0.0, 0.0]; NUM_SPHERES];
+        let mut albedo = [[0.0, 1.0, 0.0, 0.0]; NUM_SPHERES];
+
+        specular[0] = [1.0, 0.0, 0.0, 0.0];
+        albedo[0] = [1.0, 0.0, 0.0, 0.0];
+        specular[1] = [0.0, 1.0, 0.0, 0.0];
+        albedo[1] = [0.0, 1.0, 0.0, 0.0];
+        specular[2] = [0.0, 0.0, 1.0, 0.0];
+        albedo[2] = [0.0, 0.0, 1.0, 0.0];
+        specular[3] = [0.0, 0.0, 0.4, 0.0];
+        albedo[3] = [0.0, 0.0, 0.8, 0.0];
+        specular[4] = [0.4, 0.0, 0.4, 0.0];
+        albedo[4] = [0.6, 0.0, 0.6, 0.0];
 
         for i in 1..NUM_SPHERES {
             spheres[i].center[0] = -1.0 - i as f32 * 1.5;
@@ -120,7 +124,8 @@ impl Tracer {
 
         let sphere_data = SphereData {
             spheres,
-            materials
+            specular,
+            albedo
         };
 
         let scene_buffer =
