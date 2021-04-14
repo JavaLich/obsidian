@@ -4,7 +4,7 @@ use vulkano::device::{Device, DeviceExtensions, Features, Queue};
 use vulkano::instance::{Instance, InstanceExtensions, PhysicalDevice};
 use vulkano::pipeline::ComputePipeline;
 use vulkano::{
-    buffer::{BufferUsage, CpuAccessibleBuffer},
+    buffer::{BufferUsage, CpuAccessibleBuffer, ImmutableBuffer},
     command_buffer::CommandBuffer,
     sync::GpuFuture,
 };
@@ -47,7 +47,7 @@ pub struct Tracer {
     device: Arc<Device>,
     queue: Arc<Queue>,
     data_buffer: Arc<CpuAccessibleBuffer<[u32; crate::WIDTH * crate::HEIGHT]>>,
-    scene_buffer: Arc<CpuAccessibleBuffer<SceneData>>,
+    scene_buffer: Arc<ImmutableBuffer<SceneData>>,
     cam_buffer: Arc<CpuAccessibleBuffer<Camera>>,
     sphere_buffer: Arc<CpuAccessibleBuffer<SphereData>>,
     shader: cs::Shader,
@@ -125,12 +125,31 @@ impl Tracer {
         let sphere_data = SphereData {
             spheres,
             specular,
-            albedo
+            albedo,
         };
 
-        let scene_buffer =
-            CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, scene_data)
+        let usage = BufferUsage {
+            transfer_source: false,
+            transfer_destination: false,
+            uniform_texel_buffer: false,
+            storage_texel_buffer: false,
+            uniform_buffer: false,
+            storage_buffer: true,
+            index_buffer: false,
+            vertex_buffer: false,
+            indirect_buffer: false,
+            device_address: false,
+        };
+
+        let (scene_buffer, future) =
+            ImmutableBuffer::from_data(scene_data, usage.clone(), queue.clone())
                 .expect("Failed to create buffer");
+
+        future
+            .then_signal_fence_and_flush()
+            .unwrap()
+            .wait(None)
+            .expect("Failed to create immutable buffer");
 
         let sphere_buffer =
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, sphere_data)
