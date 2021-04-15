@@ -94,6 +94,15 @@ impl Tracer {
             radius: 0.5,
         }; NUM_SPHERES];
 
+        for i in 0..NUM_SPHERES {
+            spheres[i].radius = rand::random::<f32>() * 2f32;
+            spheres[i].center = [
+                rand::random::<f32>() * 4f32,
+                -spheres[i].radius,
+                rand::random::<f32>() * 4f32,
+            ];
+        }
+
         let mut specular = [[0.0, 1.0, 0.0, 0.0]; NUM_SPHERES];
         let mut albedo = [[0.0, 1.0, 0.0, 0.0]; NUM_SPHERES];
 
@@ -107,10 +116,6 @@ impl Tracer {
         albedo[3] = [0.0, 0.0, 0.8, 0.0];
         specular[4] = [0.4, 0.0, 0.4, 0.0];
         albedo[4] = [0.6, 0.0, 0.6, 0.0];
-
-        for i in 1..NUM_SPHERES {
-            spheres[i].center[0] = -1.0 - i as f32 * 1.5;
-        }
 
         let sun = DirectionalLight {
             direction: [0.5, 1.0, 0.0, 0.5],
