@@ -31,6 +31,8 @@ struct SceneData {
     sun: DirectionalLight,
     _width: u32,
     _height: u32,
+    _vp_height: f32,
+    _focal_length: f32,
 }
 
 struct DirectionalLight {
@@ -39,8 +41,7 @@ struct DirectionalLight {
 
 struct Camera {
     position: [f32; 3],
-    _vp_height: f32,
-    _focal_length: f32,
+    direction: [f32; 3],
 }
 
 pub struct Tracer {
@@ -117,6 +118,8 @@ impl Tracer {
             sun,
             _width: crate::WIDTH as u32,
             _height: crate::HEIGHT as u32,
+            _vp_height: 2.0,
+            _focal_length: 1.0,
         };
 
         let sphere_data = SphereData {
@@ -154,8 +157,7 @@ impl Tracer {
 
         let cam = Camera {
             position: [0.0, -1.0, 1.0],
-            _vp_height: 2.0,
-            _focal_length: 1.0,
+            direction: [0.; 3],
         };
         let cam_buffer =
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, cam)
@@ -176,7 +178,9 @@ impl Tracer {
 
     pub fn set_camera_pos(&mut self, pos: [f32; 3]) {
         let mut content = self.cam_buffer.write().unwrap();
-        content.position = pos;
+        content.position[0] = pos[0];
+        content.position[1] = pos[1];
+        content.position[2] = pos[2];
     }
 
     pub fn change_camera_pos(&mut self, x: f32, y: f32, z: f32) {
@@ -184,6 +188,13 @@ impl Tracer {
         content.position[0] += x;
         content.position[1] += y;
         content.position[2] += z;
+    }
+
+    pub fn change_camera_direction(&mut self, x: f32, y: f32, z: f32) {
+        let mut content = self.cam_buffer.write().unwrap();
+        content.direction[0] += x;
+        content.direction[1] += y;
+        content.direction[2] += z;
     }
 
     pub fn compute(&self) -> Vec<u32> {
