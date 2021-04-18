@@ -52,8 +52,8 @@ layout(set = 0, binding = 1) buffer SceneData {
 } scene;
 
 layout (set = 0, binding = 2) buffer CamData {
-    vec3 position;
-    vec3 direction;
+    vec4 position;
+    vec4 direction;
 } cam_data;
 
 layout(set = 0, binding = 3) buffer SphereData {
@@ -131,7 +131,7 @@ vec3 ray_at(Ray ray, float t) {
 Ray get_ray(float u, float v) {
     Ray ray;
     ray.position = camera.origin;
-    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical + cam_data.direction - camera.origin;
+    ray.direction = camera.lower_left_corner + u * camera.horizontal + v * camera.vertical - camera.origin;
     ray.energy = vec3(1.0);
     return ray;
 }
@@ -212,7 +212,6 @@ bool world_hit(Ray ray, inout HitRecord hit, float t_min, float t_max) {
             hit.specular = sphere_data.specular[i].xyz;
         }     
     }
-    
 
     return is_hit;
 }
@@ -274,7 +273,7 @@ void main() {
     camera.origin = cam_data.position.xyz;
     camera.horizontal = vec3(viewport_width, 0, 0);
     camera.vertical = vec3(0, viewport_height, 0);
-    camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - vec3(0, 0, scene.focal_length);
+    camera.lower_left_corner = camera.origin - camera.horizontal/2 - camera.vertical/2 - cam_data.direction.xyz * scene.focal_length;
     camera.num_samples = 10;
 
     vec3 color = vec3(0);

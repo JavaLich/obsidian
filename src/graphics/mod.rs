@@ -36,17 +36,15 @@ pub fn run(tracer: &mut Tracer) {
         if window.is_key_down(Key::Space) {
             tracer.change_camera_pos(0f32, -speed, 0f32);
         }
+        // rotate (0, 0, 1) based on keybindings
+        // rotation matrix?
         if window.is_key_down(Key::Left) {
-            tracer.change_camera_direction(0f32, -0.1, 0f32);
         }
         if window.is_key_down(Key::Right) {
-            tracer.change_camera_direction(0f32, 0.1, 0f32);
         }
         if window.is_key_down(Key::Up) {
-            tracer.change_camera_direction(0f32, 0., 0.1);
         }
         if window.is_key_down(Key::Down) {
-            tracer.change_camera_direction(0f32, 0., -0.1);
         }
 
         let pixels = tracer.compute();

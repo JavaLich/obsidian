@@ -40,8 +40,8 @@ struct DirectionalLight {
 }
 
 struct Camera {
-    position: [f32; 3],
-    direction: [f32; 3],
+    position: [f32; 4],
+    direction: [f32; 4],
 }
 
 pub struct Tracer {
@@ -156,8 +156,8 @@ impl Tracer {
                 .expect("Failed to create buffer");
 
         let cam = Camera {
-            position: [0.0, -1.0, 1.0],
-            direction: [0.; 3],
+            position: [0.0, -1.0, 1.0, 0.0],
+            direction: [0.0, 0.0, 1.0, 0.0],
         };
         let cam_buffer =
             CpuAccessibleBuffer::from_data(device.clone(), BufferUsage::all(), false, cam)
