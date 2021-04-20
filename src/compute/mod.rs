@@ -197,6 +197,13 @@ impl Tracer {
         content.direction[2] += z;
     }
 
+    pub fn set_camera_direction(&mut self, x: f32, y: f32, z: f32) {
+        let mut content = self.cam_buffer.write().unwrap();
+        content.direction[0] = x;
+        content.direction[1] = y;
+        content.direction[2] = z;
+    }
+
     pub fn compute(&self) -> Vec<u32> {
         let compute_pipeline = Arc::new(
             ComputePipeline::new(

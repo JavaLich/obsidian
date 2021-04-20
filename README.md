@@ -6,3 +6,4 @@ Raytracer written in Rust using Vulkan compute API
 
 ## Materials
 <img src="images/image2.png" width="400" />
+<img src="images/image3.png" width="400" />
