@@ -1,5 +1,6 @@
 # obsidian
 Whitted Raytracer written in Rust using Vulkan compute API
+
 <img src="images/image3.png" width="400" />
 
 ## Reflections
